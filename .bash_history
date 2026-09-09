@@ -1349,3 +1349,267 @@ zip function.zip lambda_function.py
 aws lambda update-function-code   --function-name chaos-lambda   --zip-file fileb://function.zip   --region ap-south-1
 aws lambda wait function-updated   --function-name chaos-lambda   --region ap-south-1
 [200~cd ~/aws-chaos/lambda-chaos
+cd ~/aws-chaos/lambda-chaos
+nano experiments/10-dependency-failure-chaos.sh
+chmod +x experiments/10-dependency-failure-chaos.sh
+./experiments/10-dependency-failure-chaos.sh
+cd ~/aws-chaos/lambda-chaos
+nano run-chaos.sh
+chmod +x run-chaos.sh
+ls -l ~/aws-chaos/lambda-chaos/experiments/
+cd ~/aws-chaos
+mkdir -p chaos-engineering-project
+cd chaos-engineering-project
+nano README.md
+cd 
+git init
+nano .gitignore
+git add .
+git status
+git commit -m "Initial commit: K3s and AWS Chaos Engineering"
+git branch -M main
+git remote add origin https://github.com/shubhamthakur143/k3s-aws-chaos-engineering.git
+git push -u origin main
+ls
+cd ~/aws-chaos
+zip -r chaos-engineering-project.zip .
+ls
+scp ubuntu@65.0.5.48:~/aws-chaos/chaos-engineering-project.zip .
+scp -i /path/to/your-key.pem ubuntu@65.0.5.48:/home/ubuntu/aws-chaos/chaos-engineering-project.zip .
+cd ~/aws-chaos
+python3 -m http.server 8000
+http://65.0.5.48:8000/chaos-engineering-project.zip
+cd
+http://65.0.5.48:8000/chaos-engineering-project.zip
+cd ~/aws-chaos
+python3 -m http.server 8000
+cd ~/aws-chaos
+find . -type f | sort
+find ~/aws-chaos -type f \( -name "*.yaml" -o -name "*.yml" -o -name "*.sh" \) | grep -Ei "k3s|k8s|chaos|pod|node|network|cpu|memory|disk|io"
+cd ~/aws-chaos
+echo "========== ALL SHELL SCRIPTS =========="
+find . -type f -name "*.sh" -print | sort
+cd 
+cd ~/aws-chaos
+echo "========== ALL SHELL SCRIPTS =========="
+find . -type f -name "*.sh" -print | sort
+find ~ -type f \( -name "*.yaml" -o -name "*.yml" -o -name "*.sh" \) 2>/dev/null | grep -Ei "chaos|mesh|podchaos|networkchaos|stresschaos|iochaos|timechaos"
+find ~ -type f \( -name "*.yaml" -o -name "*.yml" \) 2>/dev/null | head -200
+cd ~/chaos-experiments/chaos-75
+echo "========== TOTAL YAML FILES =========="
+find . -type f -name "*.yaml" | wc -l
+echo ""
+echo "========== YAML FILES BY CATEGORY =========="
+for dir in */; do     echo "";     echo "### $dir";     find "$dir" -maxdepth 1 -type f -name "*.yaml" | sort; done
+cd ~/chaos-experiments/chaos-75
+echo "========== ROOT YAML FILES =========="
+find . -maxdepth 1 -type f -name "*.yaml" -printf "%f\n" | sort
+echo ""
+echo "========== KIND COUNT =========="
+grep -R "^kind:" . --include="*.yaml" | sort | uniq -c
+echo "========== ALL CHAOS KINDS =========="
+grep -R "^kind:" .   --include="*.yaml"   | grep -v -E "Alertmanager|PrometheusRule|ConfigMap|Service|Deployment"   | sort
+htop
+top
+watch -n 1 free -h
+top
+watch -n 1 df -h /
+ls -lh /tmp/chaos-disk-fill.img
+cd ~/aws-chaos/aws-experiments
+fallocate -l 2G /tmp/test-disk.img
+ls -lh /tmp/test-disk.img
+df -h /
+rm -f /tmp/test-disk.img
+df -h /
+cd ~/aws-chaos/aws-experiments
+which tc
+sudo apt update
+sudo apt install -y iproute2
+ip route | grep default
+ip -br link
+cat > 17-ec2-network-latency.sh <<'EOF'
+#!/bin/bash
+
+set -e
+
+echo "======================================"
+echo " AWS CHAOS #17 - EC2 NETWORK LATENCY"
+echo "======================================"
+
+INTERFACE=$(ip route | awk '/default/ {print $5; exit}')
+DELAY="200ms"
+DURATION=60
+
+echo "Target Interface: $INTERFACE"
+echo "Injected Latency: $DELAY"
+echo "Duration: $DURATION seconds"
+
+echo ""
+echo "========== NETWORK BEFORE =========="
+ping -c 3 8.8.8.8 || true
+
+echo ""
+echo ">>> CHAOS STARTED <<<"
+
+sudo tc qdisc add dev "$INTERFACE" root netem delay "$DELAY"
+
+echo ""
+echo "Network latency injected successfully."
+echo "Waiting for $DURATION seconds..."
+
+sleep "$DURATION"
+
+echo ""
+echo ">>> RECOVERY STARTED <<<"
+
+sudo tc qdisc del dev "$INTERFACE" root || true
+
+echo ""
+echo "========== NETWORK AFTER RECOVERY =========="
+ping -c 3 8.8.8.8 || true
+
+echo ""
+echo "AWS Chaos #17 completed successfully."
+EOF
+
+chmod +x 17-ec2-network-latency.sh
+./17-ec2-network-latency.sh
+tc qdisc show
+tc qdisc show dev enp39s0
+tc qdisc show
+tc qdisc show dev enp39s0
+aws sts get-caller-identity
+cd ~/aws-chaos/aws-experiments
+cat > 19-security-group-misconfiguration.sh <<'EOF'
+#!/bin/bash
+
+set -e
+
+echo "============================================"
+echo " AWS CHAOS #19 - SECURITY GROUP MISCONFIG"
+echo "============================================"
+
+REGION="ap-south-1"
+SG_ID="sg-0bd500944d5b31de3"
+
+TEST_PORT="8081"
+SOURCE_CIDR="10.255.255.0/24"
+
+echo "Security Group: $SG_ID"
+echo "Test Port: $TEST_PORT"
+echo "Wrong Source CIDR: $SOURCE_CIDR"
+
+echo ""
+echo "========== BEFORE =========="
+aws ec2 describe-security-groups \
+  --group-ids "$SG_ID" \
+  --region "$REGION" \
+  --query 'SecurityGroups[0].IpPermissions' \
+  --output table
+
+echo ""
+echo ">>> CHAOS STARTED <<<"
+echo "Adding intentionally incorrect test rule..."
+
+aws ec2 authorize-security-group-ingress \
+  --group-id "$SG_ID" \
+  --protocol tcp \
+  --port "$TEST_PORT" \
+  --cidr "$SOURCE_CIDR" \
+  --region "$REGION"
+
+echo ""
+echo "Misconfigured rule added successfully."
+
+echo ""
+echo "========== DURING CHAOS =========="
+aws ec2 describe-security-groups \
+  --group-ids "$SG_ID" \
+  --region "$REGION" \
+  --query 'SecurityGroups[0].IpPermissions' \
+  --output table
+
+echo ""
+echo "Chaos active for 30 seconds..."
+sleep 30
+
+echo ""
+echo ">>> RECOVERY STARTED <<<"
+
+aws ec2 revoke-security-group-ingress \
+  --group-id "$SG_ID" \
+  --protocol tcp \
+  --port "$TEST_PORT" \
+  --cidr "$SOURCE_CIDR" \
+  --region "$REGION"
+
+echo "Incorrect rule removed successfully."
+
+echo ""
+echo "========== AFTER RECOVERY =========="
+aws ec2 describe-security-groups \
+  --group-ids "$SG_ID" \
+  --region "$REGION" \
+  --query 'SecurityGroups[0].IpPermissions' \
+  --output table
+
+echo ""
+echo "AWS Chaos #19 completed successfully."
+
+EOF
+
+chmod +x 19-security-group-misconfiguration.sh
+./19-security-group-misconfiguration.sh
+[200~cd ~/aws-chaos/aws-experiments
+cat > 20-iam-permission-failure.sh <<'EOF'
+#!/bin/bash
+
+echo "=========================================="
+echo " AWS CHAOS #20 - IAM PERMISSION FAILURE"
+echo "=========================================="
+
+REGION="ap-south-1"
+FAKE_ROLE_ARN="arn:aws:iam::632843870789:role/Chaos-NonExistent-Role"
+
+echo ""
+echo "========== CURRENT AWS IDENTITY =========="
+aws sts get-caller-identity
+
+echo ""
+echo ">>> CHAOS STARTED <<<"
+echo "Simulating IAM permission/role access failure..."
+
+echo ""
+echo "Attempting to assume a non-existent IAM role:"
+echo "$FAKE_ROLE_ARN"
+
+aws sts assume-role \
+  --role-arn "$FAKE_ROLE_ARN" \
+  --role-session-name chaos-test \
+  --region "$REGION" \
+  > iam-chaos-response.json 2>&1
+
+EXIT_CODE=$?
+
+echo ""
+echo "========== CHAOS RESULT =========="
+
+if [ $EXIT_CODE -ne 0 ]; then
+    echo "IAM access failure successfully simulated."
+    echo ""
+    cat iam-chaos-response.json
+else
+    echo "WARNING: Command unexpectedly succeeded."
+fi
+
+echo ""
+echo "========== RECOVERY =========="
+echo "No IAM permissions were modified."
+echo "No recovery action required."
+
+rm -f iam-chaos-response.json
+
+echo ""
+echo "AWS Chaos #20 completed successfully."
+
+
