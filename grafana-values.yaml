@@ -1,0 +1,12 @@
+grafana:
+  grafana.ini:
+    smtp:
+      enabled: true
+      host: smtp.gmail.com:587
+      user: shubhamthakur0580@gmail.com
+      from_address: shubhamthakur0580@gmail.com
+      from_name: Grafana
+      startTLS_policy: MandatoryStartTLS
+
+  env:
+    GF_SMTP_PASSWORD: "ewzonukbzybyfuws"

@@ -1,0 +1,25 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: batch1-email-alerts
+  namespace: chaos-lab
+
+spec:
+  route:
+    receiver: chaos-email
+    matchers:
+      - name: alert_group
+        value: batch1
+        matchType: "="
+
+  receivers:
+    - name: chaos-email
+      emailConfigs:
+        - to: "shubhamthakur0580@gmail.com"
+          from: "shubhamthakur0580@gmail.com"
+          smarthost: "smtp.gmail.com:587"
+          authUsername: "shubhamthakur0580@gmail.com"
+          authPassword:
+            name: chaos-email-secret
+            key: password
+          requireTLS: true

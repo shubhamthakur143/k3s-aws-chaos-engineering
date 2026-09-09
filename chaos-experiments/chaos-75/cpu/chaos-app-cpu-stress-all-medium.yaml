@@ -1,0 +1,19 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: StressChaos
+metadata:
+  name: chaos-app-cpu-stress-all-medium
+  namespace: chaos-lab
+  labels:
+    chaos_name: chaos-app-cpu-stress-all-medium
+spec:
+  mode: all
+  selector:
+    namespaces:
+      - chaos-lab
+    labelSelectors:
+      app: chaos-app
+  duration: "60s"
+  stressors:
+    cpu:
+      workers: 1
+      load: 80

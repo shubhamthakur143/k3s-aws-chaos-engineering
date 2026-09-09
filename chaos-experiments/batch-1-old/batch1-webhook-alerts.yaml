@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: batch1-webhook-alerts
+  namespace: chaos-lab
+spec:
+  route:
+    receiver: chaos-webhook
+    groupBy:
+      - alertname
+      - chaos_name
+    groupWait: 10s
+    groupInterval: 30s
+    repeatInterval: 5m
+
+  receivers:
+    - name: chaos-webhook
+      webhookConfigs:
+        - url: "https://webhook.site/cb19f46c-20c4-42f1-8d69-3dfb87bed97b"
+          sendResolved: true

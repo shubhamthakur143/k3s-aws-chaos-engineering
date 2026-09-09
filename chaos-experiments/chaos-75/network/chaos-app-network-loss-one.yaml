@@ -1,0 +1,18 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: chaos-app-network-loss-one
+  namespace: chaos-lab
+  labels:
+    chaos_name: chaos-app-network-loss-one
+spec:
+  action: loss
+  mode: one
+  selector:
+    namespaces:
+      - chaos-lab
+    labelSelectors:
+      app: chaos-app
+  loss:
+    loss: "25"
+  duration: "60s"

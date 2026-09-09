@@ -1,0 +1,23 @@
+# AWS Credentials
+.aws/
+credentials
+*.pem
+*.key
+
+# Environment files
+.env
+.env.*
+
+# Python
+__pycache__/
+*.pyc
+
+# Logs
+*.log
+
+# Generated response files
+responses/
+*.json
+
+# ZIP files
+*.zip

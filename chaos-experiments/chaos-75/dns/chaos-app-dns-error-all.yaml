@@ -1,0 +1,18 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: DNSChaos
+metadata:
+  name: chaos-app-dns-error-all
+  namespace: chaos-lab
+  labels:
+    chaos_name: chaos-app-dns-error-all
+spec:
+  action: error
+  mode: all
+  selector:
+    namespaces:
+      - chaos-lab
+    labelSelectors:
+      app: chaos-app
+  patterns:
+    - "*"
+  duration: "60s"

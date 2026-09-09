@@ -1,0 +1,19 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: chaos-app-network-corrupt
+  namespace: chaos-lab
+spec:
+  action: corrupt
+  mode: one
+  selector:
+    namespaces:
+      - chaos-lab
+    labelSelectors:
+      app: chaos-app
+
+  corrupt:
+    corrupt: "30"
+    correlation: "0"
+
+  duration: "30s"

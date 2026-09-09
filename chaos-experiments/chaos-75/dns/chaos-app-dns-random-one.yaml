@@ -1,0 +1,18 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: DNSChaos
+metadata:
+  name: chaos-app-dns-random-one
+  namespace: chaos-lab
+  labels:
+    chaos_name: chaos-app-dns-random-one
+spec:
+  action: random
+  mode: one
+  selector:
+    namespaces:
+      - chaos-lab
+    labelSelectors:
+      app: chaos-app
+  patterns:
+    - "mariadb"
+  duration: "60s"

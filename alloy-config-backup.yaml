@@ -1,0 +1,26 @@
+apiVersion: v1
+data:
+  config.alloy: "logging {\n\tlevel  = \"info\"\n\tformat = \"logfmt\"\n}\n\ndiscovery.kubernetes
+    \"pods\" {\n\trole = \"pod\"\n}\n\ndiscovery.kubernetes \"nodes\" {\n\trole =
+    \"node\"\n}\n\ndiscovery.kubernetes \"services\" {\n\trole = \"service\"\n}\n\ndiscovery.kubernetes
+    \"endpoints\" {\n\trole = \"endpoints\"\n}\n\ndiscovery.kubernetes \"endpointslices\"
+    {\n\trole = \"endpointslice\"\n}\n\ndiscovery.kubernetes \"ingresses\" {\n\trole
+    = \"ingress\"\n}"
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: alloy
+    meta.helm.sh/release-namespace: monitoring
+  creationTimestamp: "2026-09-07T06:02:08Z"
+  labels:
+    app.kubernetes.io/component: config
+    app.kubernetes.io/instance: alloy
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: alloy
+    app.kubernetes.io/part-of: alloy
+    app.kubernetes.io/version: v1.19.2
+    helm.sh/chart: alloy-1.12.1
+  name: alloy
+  namespace: monitoring
+  resourceVersion: "59096"
+  uid: 9504a6db-f251-4194-9040-d4fd530b0269

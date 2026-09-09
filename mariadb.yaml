@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mariadb-secret
+  namespace: chaos-lab
+type: Opaque
+stringData:
+  MYSQL_ROOT_PASSWORD: chaos123
+  MYSQL_DATABASE: chaosdb
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb
+  namespace: chaos-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mariadb
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      containers:
+        - name: mariadb
+          image: mariadb:11
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-secret
+                  key: MYSQL_ROOT_PASSWORD
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-secret
+                  key: MYSQL_DATABASE
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb
+  namespace: chaos-lab
+spec:
+  selector:
+    app: mariadb
+  ports:
+    - port: 3306
+      targetPort: 3306
+  type: ClusterIP

@@ -1,0 +1,19 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: chaos-app-network-duplicate
+  namespace: chaos-lab
+spec:
+  action: duplicate
+  mode: one
+  selector:
+    namespaces:
+      - chaos-lab
+    labelSelectors:
+      app: chaos-app
+
+  duplicate:
+    duplicate: "50"
+    correlation: "0"
+
+  duration: "30s"

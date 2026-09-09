@@ -1,0 +1,20 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: IOChaos
+metadata:
+  name: chaos-app-io-latency-all
+  namespace: chaos-lab
+  labels:
+    chaos_name: chaos-app-io-latency-all
+spec:
+  action: latency
+  mode: all
+  selector:
+    namespaces:
+      - chaos-lab
+    labelSelectors:
+      app: chaos-app
+  volumePath: /data
+  path: /data/**
+  delay: "100ms"
+  percent: 100
+  duration: "60s"

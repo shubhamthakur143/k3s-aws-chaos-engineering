@@ -1,0 +1,18 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: HTTPChaos
+metadata:
+  name: chaos-app-http-delay-one
+  namespace: chaos-lab
+  labels:
+    chaos_name: chaos-app-http-delay-one
+spec:
+  mode: one
+  selector:
+    namespaces:
+      - chaos-lab
+    labelSelectors:
+      app: chaos-app
+  target: Request
+  port: 80
+  delay: "1000ms"
+  duration: "60s"

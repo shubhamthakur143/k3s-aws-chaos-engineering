@@ -1,0 +1,101 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: discord-relay-code
+  namespace: monitoring
+data:
+  app.py: |
+    from flask import Flask, request
+    import requests
+    import os
+
+    app = Flask(__name__)
+
+    DISCORD_WEBHOOK = os.environ["DISCORD_WEBHOOK"]
+
+    @app.route("/alert", methods=["POST"])
+    def alert():
+        data = request.json
+
+        alerts = data.get("alerts", [])
+
+        for alert in alerts:
+            status = alert.get("status", "unknown").upper()
+            labels = alert.get("labels", {})
+            annotations = alert.get("annotations", {})
+
+            message = {
+                "content": (
+                    f"🚨 **CHAOS ALERT - {status}**\n"
+                    f"**Alert:** {labels.get('alertname', 'Unknown')}\n"
+                    f"**Severity:** {labels.get('severity', 'unknown')}\n"
+                    f"**Namespace:** {labels.get('namespace', 'unknown')}\n"
+                    f"**Pod:** {labels.get('pod', 'N/A')}\n"
+                    f"**Summary:** {annotations.get('summary', 'N/A')}\n"
+                    f"**Description:** {annotations.get('description', 'N/A')}"
+                )
+            }
+
+            requests.post(DISCORD_WEBHOOK, json=message, timeout=10)
+
+        return {"status": "ok"}, 200
+
+    @app.route("/health", methods=["GET"])
+    def health():
+        return {"status": "healthy"}, 200
+
+    app.run(host="0.0.0.0", port=8080)
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discord-relay
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: discord-relay
+  template:
+    metadata:
+      labels:
+        app: discord-relay
+    spec:
+      containers:
+      - name: discord-relay
+        image: python:3.12-slim
+        ports:
+        - containerPort: 8080
+        env:
+        - name: DISCORD_WEBHOOK
+          valueFrom:
+            secretKeyRef:
+              name: discord-webhook
+              key: webhook-url
+        command:
+        - /bin/sh
+        - -c
+        - |
+          pip install --no-cache-dir flask requests && python /app/app.py
+        volumeMounts:
+        - name: app-code
+          mountPath: /app
+      volumes:
+      - name: app-code
+        configMap:
+          name: discord-relay-code
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: discord-relay
+  namespace: monitoring
+spec:
+  selector:
+    app: discord-relay
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080

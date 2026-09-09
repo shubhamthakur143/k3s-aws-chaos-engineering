@@ -1,0 +1,17 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: StressChaos
+metadata:
+  name: chaos-app-memory-workers-one
+  namespace: chaos-lab
+spec:
+  mode: one
+  selector:
+    namespaces:
+      - chaos-lab
+    labelSelectors:
+      app: chaos-app
+  stressors:
+    memory:
+      workers: 3
+      size: "128MB"
+  duration: "60s"

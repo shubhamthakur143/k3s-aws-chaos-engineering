@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mariadb-exporter-config
+  namespace: chaos-lab
+data:
+  .my.cnf: |
+    [client]
+    user=root
+    password=chaos123
+    host=mariadb
+    port=3306
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb-exporter
+  namespace: chaos-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mariadb-exporter
+  template:
+    metadata:
+      labels:
+        app: mariadb-exporter
+    spec:
+      containers:
+        - name: mariadb-exporter
+          image: prom/mysqld-exporter:v0.17.2
+          args:
+            - "--config.my-cnf=/cfg/.my.cnf"
+          ports:
+            - containerPort: 9104
+              name: metrics
+          volumeMounts:
+            - name: config
+              mountPath: /cfg
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: mariadb-exporter-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb-exporter
+  namespace: chaos-lab
+  labels:
+    app: mariadb-exporter
+spec:
+  selector:
+    app: mariadb-exporter
+  ports:
+    - name: metrics
+      port: 9104
+      targetPort: 9104

@@ -1,0 +1,18 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: IOChaos
+metadata:
+  name: mariadb-io-latency
+  namespace: chaos-lab
+spec:
+  action: latency
+  mode: one
+  duration: "60s"
+  selector:
+    namespaces:
+      - chaos-lab
+    labelSelectors:
+      app: mariadb
+  volumePath: /var/lib/mysql
+  path: /var/lib/mysql/**/*
+  delay: "100ms"
+  percent: 100

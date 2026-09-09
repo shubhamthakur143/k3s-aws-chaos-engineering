@@ -1,0 +1,19 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: StressChaos
+metadata:
+  name: mariadb-cpu-stress
+  namespace: chaos-lab
+  labels:
+    chaos_name: mariadb-cpu-stress
+spec:
+  mode: one
+  selector:
+    namespaces:
+      - chaos-lab
+    labelSelectors:
+      app: mariadb
+  stressors:
+    cpu:
+      workers: 1
+      load: 80
+  duration: "60s"

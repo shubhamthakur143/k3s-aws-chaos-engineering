@@ -1,0 +1,17 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: StressChaos
+metadata:
+  name: mariadb-memory-stress
+  namespace: chaos-lab
+spec:
+  mode: one
+  duration: "60s"
+  selector:
+    namespaces:
+      - chaos-lab
+    labelSelectors:
+      app: mariadb
+  stressors:
+    memory:
+      workers: 1
+      size: "128MB"

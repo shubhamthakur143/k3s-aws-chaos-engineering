@@ -1,0 +1,190 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: chaos-75-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: chaos-75-impact-alerts
+      interval: 15s
+
+      rules:
+
+        # --------------------------------------------------
+        # APPLICATION AVAILABILITY
+        # --------------------------------------------------
+
+        - alert: ChaosAppAvailableReplicasLow
+          expr: |
+            kube_deployment_status_replicas_available{
+              namespace="chaos-lab",
+              deployment="chaos-app"
+            }
+            <
+            kube_deployment_spec_replicas{
+              namespace="chaos-lab",
+              deployment="chaos-app"
+            }
+          for: 15s
+          labels:
+            alert_group: chaos75
+            severity: warning
+          annotations:
+            summary: "Chaos application has fewer available replicas"
+            description: "Available replicas are below the desired replica count."
+
+        - alert: ChaosAppNoAvailableReplicas
+          expr: |
+            kube_deployment_status_replicas_available{
+              namespace="chaos-lab",
+              deployment="chaos-app"
+            } == 0
+          for: 15s
+          labels:
+            alert_group: chaos75
+            severity: critical
+          annotations:
+            summary: "Chaos application has no available replicas"
+            description: "The chaos-app deployment has zero available replicas."
+
+        # --------------------------------------------------
+        # POD RESTART / OOM
+        # --------------------------------------------------
+
+        - alert: ChaosAppPodRestartDetected
+          expr: |
+            increase(
+              kube_pod_container_status_restarts_total{
+                namespace="chaos-lab",
+                pod=~"chaos-app-.*"
+              }[5m]
+            ) > 0
+          for: 15s
+          labels:
+            alert_group: chaos75
+            severity: warning
+          annotations:
+            summary: "Chaos application pod restarted"
+            description: "Pod {{ $labels.pod }} has restarted within the last 5 minutes."
+
+        - alert: ChaosAppContainerOOMKilled
+          expr: |
+            kube_pod_container_status_last_terminated_reason{
+              namespace="chaos-lab",
+              pod=~"chaos-app-.*",
+              reason="OOMKilled"
+            } == 1
+          for: 15s
+          labels:
+            alert_group: chaos75
+            severity: critical
+          annotations:
+            summary: "Chaos application container was OOM killed"
+            description: "Container {{ $labels.container }} in pod {{ $labels.pod }} was terminated because of OOM."
+
+        # --------------------------------------------------
+        # CPU
+        # --------------------------------------------------
+
+        - alert: ChaosAppCPUCritical
+          expr: |
+            sum by (pod, container) (
+              rate(
+                container_cpu_usage_seconds_total{
+                  namespace="chaos-lab",
+                  pod=~"chaos-app-.*",
+                  container!="",
+                  container!="POD"
+                }[1m]
+              )
+            ) > 0.90
+          for: 15s
+          labels:
+            alert_group: chaos75
+            severity: critical
+          annotations:
+            summary: "Chaos application CPU usage is critical"
+            description: "Pod {{ $labels.pod }} container {{ $labels.container }} is using more than 90% of one CPU core."
+
+        # --------------------------------------------------
+        # MEMORY
+        # --------------------------------------------------
+
+        - alert: ChaosAppMemoryCritical
+          expr: |
+            container_memory_working_set_bytes{
+              namespace="chaos-lab",
+              pod=~"chaos-app-.*",
+              container!="",
+              container!="POD"
+            } > 450000000
+          for: 15s
+          labels:
+            alert_group: chaos75
+            severity: critical
+          annotations:
+            summary: "Chaos application memory usage is critical"
+            description: "Pod {{ $labels.pod }} memory working set is above 450MB."
+
+        # --------------------------------------------------
+        # MARIADB
+        # --------------------------------------------------
+
+        - alert: MariaDBPodRestarted
+          expr: |
+            increase(
+              kube_pod_container_status_restarts_total{
+                namespace="chaos-lab",
+                pod=~"mariadb-.*"
+              }[5m]
+            ) > 0
+          for: 15s
+          labels:
+            alert_group: chaos75
+            severity: warning
+          annotations:
+            summary: "MariaDB pod restarted"
+            description: "MariaDB pod {{ $labels.pod }} has restarted within the last 5 minutes."
+
+        - alert: MariaDBNoAvailablePod
+          expr: |
+            kube_deployment_status_replicas_available{
+              namespace="chaos-lab",
+              deployment="mariadb"
+            } == 0
+          for: 15s
+          labels:
+            alert_group: chaos75
+            severity: critical
+          annotations:
+            summary: "MariaDB has no available replicas"
+            description: "The MariaDB deployment has zero available replicas."
+
+        # --------------------------------------------------
+        # APP + DATABASE AVAILABILITY
+        # --------------------------------------------------
+
+        - alert: ChaosLabApplicationAndDatabaseDegraded
+          expr: |
+            (
+              kube_deployment_status_replicas_available{
+                namespace="chaos-lab",
+                deployment="chaos-app"
+              } == 0
+            )
+            OR
+            (
+              kube_deployment_status_replicas_available{
+                namespace="chaos-lab",
+                deployment="mariadb"
+              } == 0
+            )
+          for: 15s
+          labels:
+            alert_group: chaos75
+            severity: critical
+          annotations:
+            summary: "Application or database is unavailable"
+            description: "Either chaos-app or MariaDB has no available replicas."

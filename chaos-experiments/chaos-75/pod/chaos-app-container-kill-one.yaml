@@ -1,0 +1,18 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: chaos-app-container-kill-one
+  namespace: chaos-lab
+  labels:
+    chaos_name: chaos-app-container-kill-one
+spec:
+  action: container-kill
+  mode: one
+  selector:
+    namespaces:
+      - chaos-lab
+    labelSelectors:
+      app: chaos-app
+  containerNames:
+    - nginx
+

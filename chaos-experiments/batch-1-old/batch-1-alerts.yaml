@@ -1,0 +1,181 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: batch-1-chaos-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+
+spec:
+  groups:
+    - name: batch1-chaos-alerts
+      interval: 30s
+      rules:
+
+        # 1. Chaos App Pod Not Ready
+        - alert: ChaosAppPodNotReady
+          expr: |
+            kube_pod_status_ready{
+              condition="true",
+              namespace="chaos-lab",
+              pod=~"chaos-app-.*"
+            } == 0
+          for: 30s
+          labels:
+            severity: critical
+            alert_group: batch1
+          annotations:
+            summary: "Chaos app pod is not ready"
+            description: "Pod {{ $labels.pod }} is not ready for more than 30 seconds."
+
+        # 2. High Restart Count
+        - alert: ChaosAppHighRestarts
+          expr: |
+            increase(
+              kube_pod_container_status_restarts_total{
+                namespace="chaos-lab",
+                pod=~"chaos-app-.*"
+              }[5m]
+            ) > 2
+          for: 30s
+          labels:
+            severity: warning
+            alert_group: batch1
+          annotations:
+            summary: "High container restart count"
+            description: "Pod {{ $labels.pod }} restarted more than 2 times in 5 minutes."
+
+        # 3. High Memory Usage
+        - alert: ChaosAppHighMemory
+          expr: |
+            container_memory_working_set_bytes{
+              namespace="chaos-lab",
+              pod=~"chaos-app-.*",
+              container!="",
+              container!="POD"
+            } > 500000000
+          for: 30s
+          labels:
+            severity: warning
+            alert_group: batch1
+          annotations:
+            summary: "High memory usage"
+            description: "Pod {{ $labels.pod }} memory usage is high."
+
+        # 4. High CPU Usage
+        - alert: ChaosAppHighCPU
+          expr: |
+            rate(
+              container_cpu_usage_seconds_total{
+                namespace="chaos-lab",
+                pod=~"chaos-app-.*",
+                container!="",
+                container!="POD"
+              }[5m]
+            ) > 0.8
+          for: 30s
+          labels:
+            severity: warning
+            alert_group: batch1
+          annotations:
+            summary: "High CPU usage"
+            description: "Pod {{ $labels.pod }} CPU usage is high."
+
+        # 5. Chaos App Pod Not Running
+        - alert: ChaosAppPodNotRunning
+          expr: |
+            kube_pod_status_phase{
+              namespace="chaos-lab",
+              pod=~"chaos-app-.*",
+              phase="Running"
+            } == 0
+          for: 30s
+          labels:
+            severity: critical
+            alert_group: batch1
+          annotations:
+            summary: "Chaos app pod is not running"
+            description: "Pod {{ $labels.pod }} is not in Running state."
+
+        # 6. Deployment Replica Mismatch
+        - alert: ChaosAppReplicaMismatch
+          expr: |
+            kube_deployment_spec_replicas{
+              namespace="chaos-lab",
+              deployment="chaos-app"
+            }
+            !=
+            kube_deployment_status_replicas_available{
+              namespace="chaos-lab",
+              deployment="chaos-app"
+            }
+          for: 30s
+          labels:
+            severity: critical
+            alert_group: batch1
+          annotations:
+            summary: "Deployment replica mismatch"
+            description: "Desired replicas and available replicas do not match."
+
+        # 7. Deployment Unavailable
+        - alert: ChaosAppDeploymentUnavailable
+          expr: |
+            kube_deployment_status_replicas_available{
+              namespace="chaos-lab",
+              deployment="chaos-app"
+            } == 0
+          for: 30s
+          labels:
+            severity: critical
+            alert_group: batch1
+          annotations:
+            summary: "Chaos app deployment unavailable"
+            description: "No available replicas for chaos-app deployment."
+
+        # 8. MariaDB Pod Not Ready
+        - alert: MariaDBPodNotReady
+          expr: |
+            kube_pod_status_ready{
+              condition="true",
+              namespace="chaos-lab",
+              pod=~"mariadb-.*"
+            } == 0
+          for: 30s
+          labels:
+            severity: critical
+            alert_group: batch1
+          annotations:
+            summary: "MariaDB pod is not ready"
+            description: "MariaDB pod {{ $labels.pod }} is not ready."
+
+        # 9. MariaDB Exporter Down
+        - alert: MariaDBExporterDown
+          expr: |
+            up{
+              namespace="chaos-lab",
+              pod=~"mariadb-exporter-.*"
+            } == 0
+          for: 30s
+          labels:
+            severity: warning
+            alert_group: batch1
+          annotations:
+            summary: "MariaDB exporter is down"
+            description: "MariaDB exporter target is unreachable."
+
+        # 10. Chaos App Container Restarted
+        - alert: ChaosAppContainerRestarted
+          expr: |
+            increase(
+              kube_pod_container_status_restarts_total{
+                namespace="chaos-lab",
+                pod=~"chaos-app-.*"
+              }[5m]
+            ) > 0
+          for: 30s
+          labels:
+            severity: warning
+            alert_group: batch1
+          annotations:
+            summary: "Chaos app container restarted"
+            description: "Container in pod {{ $labels.pod }} has restarted."

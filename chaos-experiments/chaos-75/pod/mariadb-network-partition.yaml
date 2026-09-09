@@ -1,0 +1,15 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: mariadb-network-partition
+  namespace: chaos-lab
+spec:
+  action: partition
+  mode: one
+  duration: "60s"
+  selector:
+    namespaces:
+      - chaos-lab
+    labelSelectors:
+      app: mariadb
+  direction: both

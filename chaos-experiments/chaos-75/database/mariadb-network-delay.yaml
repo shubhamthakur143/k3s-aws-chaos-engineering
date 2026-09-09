@@ -1,0 +1,19 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: mariadb-network-delay
+  namespace: chaos-lab
+  labels:
+    chaos_name: mariadb-network-delay
+spec:
+  action: delay
+  mode: all
+  selector:
+    namespaces:
+      - chaos-lab
+    labelSelectors:
+      app: mariadb
+  delay:
+    latency: "500ms"
+  duration: "60s"
+
