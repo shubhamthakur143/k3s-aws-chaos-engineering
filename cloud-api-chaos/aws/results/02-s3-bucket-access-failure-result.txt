@@ -1,0 +1,61 @@
+==========================================
+AWS API CHAOS #2: S3 BUCKET ACCESS FAILURE
+==========================================
+
+[1] ENVIRONMENT SETUP
+Floci AWS Status
+
+  Container:  floci  running
+  Image:      floci/floci:latest
+  Ports:      4566->4566/tcp
+  Endpoint:   http://localhost:4566
+  Reachable:  yes
+  Version:    2.0.1
+  Edition:    floci-always-free
+
+[2] CLEANUP PREVIOUS RESOURCES
+
+[3] BASELINE - CREATE BUCKET
+make_bucket: floci-chaos-s3-02
+
+[4] BASELINE - CREATE AND UPLOAD OBJECT
+Completed 27 Bytes/27 Bytes (687 Bytes/s) with 1 file(s) remainingupload: ./application-data.txt to s3://floci-chaos-s3-02/application-data.txt
+
+[5] BASELINE VERIFICATION
+Completed 27 Bytes/27 Bytes (3.2 KiB/s) with 1 file(s) remainingdownload: s3://floci-chaos-s3-02/application-data.txt to ./baseline-download.txt
+BASELINE SUCCESS: Bucket and object are accessible
+Important application data
+
+==========================================
+CHAOS INJECTION
+Deleting the entire S3 bucket
+==========================================
+delete: s3://floci-chaos-s3-02/application-data.txt
+remove_bucket: floci-chaos-s3-02
+
+[6] IMPACT OBSERVATION
+Trying to access the deleted bucket...
+
+aws: [ERROR]: An error occurred (NoSuchBucket) when calling the ListObjectsV2 operation: The specified bucket does not exist.
+EXPECTED FAILURE: Bucket access failed
+
+[7] RECOVERY
+Recreating bucket and restoring object...
+make_bucket: floci-chaos-s3-02
+Completed 27 Bytes/27 Bytes (857 Bytes/s) with 1 file(s) remainingupload: ./application-data.txt to s3://floci-chaos-s3-02/application-data.txt
+
+[8] RECOVERY VERIFICATION
+Completed 27 Bytes/27 Bytes (2.9 KiB/s) with 1 file(s) remainingdownload: s3://floci-chaos-s3-02/application-data.txt to ./recovered-download.txt
+RECOVERY SUCCESSFUL
+Recovered content:
+Important application data
+
+==========================================
+CHAOS #2 COMPLETED
+==========================================
+
+Summary:
+Baseline: SUCCESS
+Chaos: S3 Bucket Deletion
+Expected Impact: Bucket unavailable
+Recovery: Bucket recreated and object restored

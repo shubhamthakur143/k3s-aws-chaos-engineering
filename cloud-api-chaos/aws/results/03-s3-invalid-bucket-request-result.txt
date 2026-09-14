@@ -1,0 +1,45 @@
+==========================================
+AWS API CHAOS #3: S3 INVALID BUCKET REQUEST
+==========================================
+
+[1] ENVIRONMENT CHECK
+Floci is running.
+
+[2] CLEANUP
+
+[3] BASELINE
+make_bucket: floci-chaos-s3-03
+Completed 28 Bytes/28 Bytes (905 Bytes/s) with 1 file(s) remainingupload: ./application-data.txt to s3://floci-chaos-s3-03/application-data.txt
+Completed 28 Bytes/28 Bytes (3.5 KiB/s) with 1 file(s) remainingdownload: s3://floci-chaos-s3-03/application-data.txt to ./baseline.txt
+BASELINE SUCCESS
+Production application data
+
+==========================================
+CHAOS INJECTION
+Application configured with WRONG bucket
+==========================================
+
+[4] IMPACT OBSERVATION
+fatal error: An error occurred (404) when calling the HeadObject operation: Key "application-data.txt" does not exist
+EXPECTED FAILURE
+Impact: Application cannot access data
+Reason: Incorrect S3 bucket configuration
+
+[5] RECOVERY
+Restoring correct bucket configuration...
+Completed 28 Bytes/28 Bytes (3.7 KiB/s) with 1 file(s) remainingdownload: s3://floci-chaos-s3-03/application-data.txt to ./recovered.txt
+
+[6] RECOVERY VERIFICATION
+RECOVERY SUCCESSFUL
+Recovered data:
+Production application data
+
+==========================================
+CHAOS #3 COMPLETED
+==========================================
+
+Summary:
+Baseline: SUCCESS
+Chaos: Invalid S3 bucket configuration
+Impact: S3 API request failure
+Recovery: Correct bucket restored

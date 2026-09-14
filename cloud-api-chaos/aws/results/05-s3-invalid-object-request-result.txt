@@ -1,0 +1,46 @@
+==========================================
+AWS API CHAOS #5: S3 INVALID OBJECT REQUEST
+==========================================
+
+[1] ENVIRONMENT CHECK
+Floci is running.
+
+[2] CLEANUP
+
+[3] BASELINE
+make_bucket: floci-chaos-s3-05
+Completed 38 Bytes/38 Bytes (1.3 KiB/s) with 1 file(s) remainingupload: ./application-data.txt to s3://floci-chaos-s3-05/application-data.txt
+Verifying correct object access...
+Completed 38 Bytes/38 Bytes (5.1 KiB/s) with 1 file(s) remainingdownload: s3://floci-chaos-s3-05/application-data.txt to ./baseline.txt
+BASELINE SUCCESS
+Important production application data
+
+==========================================
+CHAOS INJECTION
+Application requests a NON-EXISTENT object
+==========================================
+
+[4] IMPACT OBSERVATION
+Requesting: application-data-v2.txt
+fatal error: An error occurred (404) when calling the HeadObject operation: Key "application-data-v2.txt" does not exist
+EXPECTED FAILURE CONFIRMED
+Impact: Application cannot retrieve required data
+Reason: Incorrect object key / object does not exist
+
+[5] RECOVERY
+Restoring correct application configuration...
+Application will request: application-data.txt
+Completed 38 Bytes/38 Bytes (5.2 KiB/s) with 1 file(s) remainingdownload: s3://floci-chaos-s3-05/application-data.txt to ./recovered.txt
+RECOVERY SUCCESSFUL
+Recovered data:
+Important production application data
+
+==========================================
+CHAOS #5 COMPLETED
+==========================================
+
+Summary:
+Baseline: Correct object accessible
+Chaos: Invalid object key requested
+Expected Impact: S3 API returns 404 Not Found
+Recovery: Correct object key restored

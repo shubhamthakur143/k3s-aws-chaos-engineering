@@ -1,0 +1,216 @@
+============================================
+AZURE CHAOS #1 - BLOB DELETION
+============================================
+
+[1] ENVIRONMENT SETUP
+Azure Storage Endpoint:
+DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=<REDACTED>;BlobEndpoint=http://localhost.floci.io:4577/devstoreaccount1;QueueEndpoint=http://localhost.floci.io:4577/devstoreaccount1-queue;TableEndpoint=http://localhost.floci.io:4577/devstoreaccount1-table;
+
+[2] CLEANUP PREVIOUS RESOURCES
+
+[3] BASELINE - CREATE CONTAINER
+{
+  "created": true
+}
+
+[4] BASELINE - CREATE AND UPLOAD BLOB
+Alive[################################################################]  100.0000%Finished[#############################################################]  100.0000%
+{
+  "client_request_id": null,
+  "content_md5": null,
+  "date": "2026-09-14T07:04:20+00:00",
+  "encryption_key_sha256": null,
+  "encryption_scope": null,
+  "etag": "b6550dd9-9dcd-4a8b-8b55-fa79fbf6c8b2",
+  "lastModified": "2026-09-14T07:04:20+00:00",
+  "request_id": "c9f1d804-3550-4f9a-8686-6e2eedb21ea2",
+  "request_server_encrypted": true,
+  "structured_body": null,
+  "version": "2026-04-06",
+  "version_id": null
+}
+
+[5] BASELINE VERIFICATION
+Alive[################################################################]  100.0000%Finished[#############################################################]  100.0000%
+{
+  "container": "chaoscontainer01",
+  "content": "",
+  "contentMd5": null,
+  "deleted": false,
+  "encryptedMetadata": null,
+  "encryptionKeySha256": null,
+  "encryptionScope": null,
+  "hasLegalHold": null,
+  "hasVersionsOnly": null,
+  "immutabilityPolicy": {
+    "expiryTime": null,
+    "policyMode": null
+  },
+  "isAppendBlobSealed": null,
+  "isCurrentVersion": null,
+  "lastAccessedOn": null,
+  "metadata": {},
+  "name": "application-config.txt",
+  "objectReplicationDestinationPolicy": null,
+  "objectReplicationSourceProperties": [],
+  "properties": {
+    "appendBlobCommittedBlockCount": null,
+    "blobTier": null,
+    "blobTierChangeTime": null,
+    "blobTierInferred": null,
+    "blobType": "BlockBlob",
+    "contentLength": 42,
+    "contentRange": "bytes 0-41/42",
+    "contentSettings": {
+      "cacheControl": null,
+      "contentDisposition": null,
+      "contentEncoding": null,
+      "contentLanguage": null,
+      "contentMd5": null,
+      "contentType": "text/plain"
+    },
+    "copy": {
+      "completionTime": null,
+      "destinationSnapshot": null,
+      "id": null,
+      "incrementalCopy": null,
+      "progress": null,
+      "source": null,
+      "status": null,
+      "statusDescription": null
+    },
+    "creationTime": "2026-09-14T07:04:20+00:00",
+    "deletedTime": null,
+    "etag": "b6550dd9-9dcd-4a8b-8b55-fa79fbf6c8b2",
+    "lastModified": "2026-09-14T07:04:20+00:00",
+    "lease": {
+      "duration": null,
+      "state": "available",
+      "status": "unlocked"
+    },
+    "pageBlobSequenceNumber": null,
+    "pageRanges": null,
+    "rehydrationStatus": null,
+    "remainingRetentionDays": null,
+    "serverEncrypted": true
+  },
+  "rehydratePriority": null,
+  "requestServerEncrypted": true,
+  "snapshot": null,
+  "tagCount": null,
+  "tags": null,
+  "versionId": null
+}
+Baseline data:
+Important Azure application configuration
+
+BASELINE SUCCESS ✅
+
+============================================
+CHAOS INJECTION - DELETE BLOB 💥
+============================================
+Blob deleted.
+
+[6] IMPACT OBSERVATION
+ERROR: The specified blob does not exist.
+ErrorCode:BlobNotFound
+EXPECTED FAILURE CONFIRMED ❌
+Impact: Application cannot retrieve required configuration.
+
+============================================
+RECOVERY 🔄
+============================================
+Alive[################################################################]  100.0000%Finished[#############################################################]  100.0000%
+{
+  "client_request_id": null,
+  "content_md5": null,
+  "date": "2026-09-14T07:04:25+00:00",
+  "encryption_key_sha256": null,
+  "encryption_scope": null,
+  "etag": "68c7a740-7c89-4a6f-8c27-2c755d1ad454",
+  "lastModified": "2026-09-14T07:04:25+00:00",
+  "request_id": "99af463f-ff87-49ec-bb91-fa2b74e4908f",
+  "request_server_encrypted": true,
+  "structured_body": null,
+  "version": "2026-04-06",
+  "version_id": null
+}
+Alive[################################################################]  100.0000%Finished[#############################################################]  100.0000%
+{
+  "container": "chaoscontainer01",
+  "content": "",
+  "contentMd5": null,
+  "deleted": false,
+  "encryptedMetadata": null,
+  "encryptionKeySha256": null,
+  "encryptionScope": null,
+  "hasLegalHold": null,
+  "hasVersionsOnly": null,
+  "immutabilityPolicy": {
+    "expiryTime": null,
+    "policyMode": null
+  },
+  "isAppendBlobSealed": null,
+  "isCurrentVersion": null,
+  "lastAccessedOn": null,
+  "metadata": {},
+  "name": "application-config.txt",
+  "objectReplicationDestinationPolicy": null,
+  "objectReplicationSourceProperties": [],
+  "properties": {
+    "appendBlobCommittedBlockCount": null,
+    "blobTier": null,
+    "blobTierChangeTime": null,
+    "blobTierInferred": null,
+    "blobType": "BlockBlob",
+    "contentLength": 42,
+    "contentRange": "bytes 0-41/42",
+    "contentSettings": {
+      "cacheControl": null,
+      "contentDisposition": null,
+      "contentEncoding": null,
+      "contentLanguage": null,
+      "contentMd5": null,
+      "contentType": "text/plain"
+    },
+    "copy": {
+      "completionTime": null,
+      "destinationSnapshot": null,
+      "id": null,
+      "incrementalCopy": null,
+      "progress": null,
+      "source": null,
+      "status": null,
+      "statusDescription": null
+    },
+    "creationTime": "2026-09-14T07:04:25+00:00",
+    "deletedTime": null,
+    "etag": "68c7a740-7c89-4a6f-8c27-2c755d1ad454",
+    "lastModified": "2026-09-14T07:04:25+00:00",
+    "lease": {
+      "duration": null,
+      "state": "available",
+      "status": "unlocked"
+    },
+    "pageBlobSequenceNumber": null,
+    "pageRanges": null,
+    "rehydrationStatus": null,
+    "remainingRetentionDays": null,
+    "serverEncrypted": true
+  },
+  "rehydratePriority": null,
+  "requestServerEncrypted": true,
+  "snapshot": null,
+  "tagCount": null,
+  "tags": null,
+  "versionId": null
+}
+
+Recovered data:
+Important Azure application configuration
+
+RECOVERY SUCCESSFUL ✅
+
+============================================
+AZURE CHAOS #1 COMPLETED
+============================================

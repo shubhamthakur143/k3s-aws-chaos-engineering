@@ -1,0 +1,48 @@
+==========================================
+AWS API CHAOS #4: S3 OBJECT OVERWRITE
+==========================================
+
+[1] ENVIRONMENT CHECK
+Floci is running.
+
+[2] CLEANUP
+
+[3] BASELINE
+make_bucket: floci-chaos-s3-04
+Completed 23 Bytes/23 Bytes (780 Bytes/s) with 1 file(s) remainingupload: ./original.txt to s3://floci-chaos-s3-04/application-config.txt
+Completed 23 Bytes/23 Bytes (3.2 KiB/s) with 1 file(s) remainingdownload: s3://floci-chaos-s3-04/application-config.txt to ./baseline.txt
+BASELINE OBJECT CONTENT:
+environment=production
+
+==========================================
+CHAOS INJECTION
+Overwriting valid object with corrupted data
+==========================================
+Completed 22 Bytes/22 Bytes (743 Bytes/s) with 1 file(s) remainingupload: ./corrupted.txt to s3://floci-chaos-s3-04/application-config.txt
+
+[4] IMPACT OBSERVATION
+Completed 22 Bytes/22 Bytes (2.9 KiB/s) with 1 file(s) remainingdownload: s3://floci-chaos-s3-04/application-config.txt to ./after-chaos.txt
+OBJECT CONTENT AFTER CHAOS:
+environment=CORRUPTED
+EXPECTED IMPACT CONFIRMED
+Object exists but data is corrupted.
+
+[5] RECOVERY
+Restoring original object data...
+Completed 23 Bytes/23 Bytes (773 Bytes/s) with 1 file(s) remainingupload: ./original.txt to s3://floci-chaos-s3-04/application-config.txt
+
+[6] RECOVERY VERIFICATION
+Completed 23 Bytes/23 Bytes (3.3 KiB/s) with 1 file(s) remainingdownload: s3://floci-chaos-s3-04/application-config.txt to ./recovered.txt
+RECOVERED OBJECT CONTENT:
+environment=production
+RECOVERY SUCCESSFUL
+
+==========================================
+CHAOS #4 COMPLETED
+==========================================
+
+Summary:
+Baseline: Original data available
+Chaos: Object overwritten
+Impact: Data corruption
+Recovery: Original data restored

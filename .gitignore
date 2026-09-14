@@ -1,3 +1,32 @@
+# User system files
+.ssh/
+.kube/
+.cache/
+.config/
+
+.bash_history
+.bashrc
+.bash_logout
+.profile
+.lesshst
+.Xauthority
+
+# Kubernetes secrets
+*.key
+*.pem
+*.crt
+
+# Environment files
+.env
+.env.*
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# Logs
+*.log
 # AWS Credentials
 .aws/
 credentials
